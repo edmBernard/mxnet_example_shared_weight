@@ -60,7 +60,11 @@ data = mx.sym.flatten(data=data)
 act2 = get_all_symbols(data)
 mlp_master = mx.mod.Module(symbol=act2, label_names=None, context=mx.cpu())
 mlp_master.bind(data_shapes=train_iter.provide_data, label_shapes=None)
+# ========================================================
+# DON'T WORK this line crash with :
+# > ValueError: Unknown initialization pattern for softmax1_label
 mlp_master.init_params()
+# ========================================================
 
 # Module 1
 data = mx.sym.Variable('data')
