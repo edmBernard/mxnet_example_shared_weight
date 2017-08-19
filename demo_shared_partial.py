@@ -1,6 +1,9 @@
 import logging
 import mxnet as mx
 
+
+logging.getLogger().setLevel(logging.DEBUG)  # logging to stdout
+
 mnist = mx.test_utils.get_mnist()
 
 batch_size = 100
@@ -15,8 +18,16 @@ def get_shared_symbol(data):
     act2 = mx.sym.Activation(data=fc2, name='act2', act_type="relu")
     return act2
 
+# Build master module
+data = mx.sym.Variable('data')
+data = mx.sym.flatten(data=data)
+act2 = get_shared_symbol(data)
+mlp_master = mx.mod.Module(symbol=act2, label_names=None, context=mx.cpu())
+mlp_master.bind(data_shapes=train_iter.provide_data, label_shapes=None)
+mlp_master.init_params()
 
-# Module 1: used as master module
+
+# Module 1
 data = mx.sym.Variable('data')
 data = mx.sym.flatten(data=data)
 
@@ -25,7 +36,12 @@ fc3 = mx.sym.FullyConnected(data=act2, name='fc3_1', num_hidden=5)
 mlps = mx.sym.SoftmaxOutput(data=fc3, name='softmax')
 
 mlp_model = mx.mod.Module(symbol=mlps, context=mx.cpu())
-mlp_model.bind(data_shapes=train_iter.provide_data, label_shapes=train_iter.provide_label)
+# ========================================================
+# DON'T WORK this line crash with :
+# > terminate called after throwing an instance of 'std::out_of_range'
+# >   what():  _Map_base::at
+# > Abandon
+mlp_model.bind(shared_module=mlp_master, data_shapes=train_iter.provide_data, label_shapes=train_iter.provide_label)
 mlp_model.init_params()
 
 # Module 2
@@ -37,11 +53,10 @@ fc3 = mx.sym.FullyConnected(data=act2, name='fc3_2', num_hidden=10)
 mlps = mx.sym.SoftmaxOutput(data=fc3, name='softmax')
 
 mlp_model2 = mx.mod.Module(symbol=mlps, context=mx.cpu())
-mlp_model2.bind(shared_module=mlp_model, force_rebind=False, data_shapes=train_iter.provide_data, label_shapes=train_iter.provide_label)
+mlp_model2.bind(shared_module=mlp_master, data_shapes=train_iter.provide_data, label_shapes=train_iter.provide_label)
 mlp_model2.init_params()
 
 # Train module 1
-logging.getLogger().setLevel(logging.DEBUG)  # logging to stdout
 print("\n===Training module1===\n")
 mlp_model.fit(train_iter,  # train data
               eval_data=val_iter,  # validation data
