@@ -1,13 +1,15 @@
 import logging
 import mxnet as mx
 
+logging.getLogger().setLevel(logging.DEBUG)  # logging to stdout
+
 mnist = mx.test_utils.get_mnist()
 
 batch_size = 100
 train_iter = mx.io.NDArrayIter(mnist['train_data'], mnist['train_label'], batch_size, shuffle=True)
 val_iter = mx.io.NDArrayIter(mnist['test_data'], mnist['test_label'], batch_size)
 
-# Shared symbol 
+# Shared symbol
 def get_shared_symbol(data):
     fc1 = mx.sym.FullyConnected(data=data, name='fc1', num_hidden=128)
     act1 = mx.sym.Activation(data=fc1, name='act1', act_type="relu")
@@ -31,11 +33,10 @@ data = mx.sym.Variable('data')
 data = mx.sym.flatten(data=data)
 mlps = get_shared_symbol(data)
 mlp_model2 = mx.mod.Module(symbol=mlps, context=mx.cpu())
-mlp_model2.bind(shared_module=mlp_model, force_rebind=False, data_shapes=train_iter.provide_data, label_shapes=train_iter.provide_label)
+mlp_model2.bind(shared_module=mlp_model, data_shapes=train_iter.provide_data, label_shapes=train_iter.provide_label)
 mlp_model2.init_params()
 
 # Train module 1
-logging.getLogger().setLevel(logging.DEBUG)  # logging to stdout
 print("\n===Training module1===\n")
 mlp_model.fit(train_iter,  # train data
               eval_data=val_iter,  # validation data
