@@ -11,7 +11,7 @@ train_iter = mx.io.NDArrayIter(mnist['train_data'], mnist['train_label'], batch_
 val_iter = mx.io.NDArrayIter(mnist['test_data'], mnist['test_label'], batch_size)
 
 # Shared symbol 
-def get_all_symbols(data):
+def get_all_symbols(data, label):
     # Shared
     fc1 = mx.sym.FullyConnected(data=data, name='fc1', num_hidden=128)
     act1 = mx.sym.Activation(data=fc1, name='act1', act_type="relu")
@@ -20,11 +20,11 @@ def get_all_symbols(data):
 
     # Module 1
     fc3_1 = mx.sym.FullyConnected(data=act2, name='fc3_1', num_hidden=5)
-    mlps1 = mx.sym.SoftmaxOutput(data=fc3_1, name='softmax1')
+    mlps1 = mx.sym.SoftmaxOutput(data=fc3_1, label=label, name='softmax1')
     
     # Module 2
     fc3_2 = mx.sym.FullyConnected(data=act2, name='fc3_2', num_hidden=10)
-    mlps2 = mx.sym.SoftmaxOutput(data=fc3_2, name='softmax2')
+    mlps2 = mx.sym.SoftmaxOutput(data=fc3_2, label=label, name='softmax2')
 
     return mx.sym.Group([mlps1, mlps2])
 
@@ -37,7 +37,7 @@ def get_module1_symbols(data):
 
     # Module 1
     fc3_1 = mx.sym.FullyConnected(data=act2, name='fc3_1', num_hidden=5)
-    mlps1 = mx.sym.SoftmaxOutput(data=fc3_1, name='softmax1')
+    mlps1 = mx.sym.SoftmaxOutput(data=fc3_1, name='softmax')
     
     return mlps1
 
@@ -50,21 +50,18 @@ def get_module2_symbols(data):
 
     # Module 1
     fc3_2 = mx.sym.FullyConnected(data=act2, name='fc3_2', num_hidden=10)
-    mlps2 = mx.sym.SoftmaxOutput(data=fc3_2, name='softmax2')
+    mlps2 = mx.sym.SoftmaxOutput(data=fc3_2, name='softmax')
     
     return mlps2
 
 # Build master module
 data = mx.sym.Variable('data')
 data = mx.sym.flatten(data=data)
-act2 = get_all_symbols(data)
-mlp_master = mx.mod.Module(symbol=act2, label_names=None, context=mx.cpu())
-mlp_master.bind(data_shapes=train_iter.provide_data, label_shapes=None)
-# ========================================================
-# DON'T WORK this line crash with :
-# > ValueError: Unknown initialization pattern for softmax1_label
+label = mx.sym.Variable('softmax_label')
+symbols = get_all_symbols(data, label)
+mlp_master = mx.mod.Module(symbol=symbols, label_names=['softmax_label'], context=mx.cpu())
+mlp_master.bind(data_shapes=train_iter.provide_data, label_shapes=train_iter.provide_label)
 mlp_master.init_params()
-# ========================================================
 
 # Module 1
 data = mx.sym.Variable('data')
@@ -84,6 +81,9 @@ mlp_model2.init_params()
 
 # Train module 1
 print("\n===Training module1===\n")
+# ========================================================
+# DON'T WORK this line crash with :
+# > ValueError: Find name "fc3_2_bias" that is not in the arguments
 mlp_model1.fit(train_iter,  # train data
               eval_data=val_iter,  # validation data
               optimizer='sgd',  # use SGD to train
@@ -91,7 +91,7 @@ mlp_model1.fit(train_iter,  # train data
               eval_metric='acc',  # report accuracy during training
               batch_end_callback=mx.callback.Speedometer(batch_size, 100),
               num_epoch=5)  # train for at most 10 dataset passes
-
+# ========================================================
 
 # Train module 2
 # We expect the shared module to start where the first module finished
