@@ -25,7 +25,7 @@ def get_shared_symbol(data, weight, bias):
     return fc3
 
 
-# Module 1: used as master module
+# Module 1 
 data = mx.sym.Variable('data')
 data = mx.sym.flatten(data=data)
 shared = get_shared_symbol(data)
