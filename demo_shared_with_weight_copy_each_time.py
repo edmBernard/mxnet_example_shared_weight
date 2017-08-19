@@ -57,24 +57,25 @@ mlp_model1.fit(train_iter,  # train data
 # Train module 2
 # We expect the shared module to start where the first module finished
 print("\n===Training module2===\n")
-# ========================================================
-# DON'T WORK Training begin from scratch 
+arg_param, aux_param = mlp_model1.get_params()
 mlp_model2.fit(train_iter,  # train data
                eval_data=val_iter,  # validation data
                optimizer='sgd',  # use SGD to train
                optimizer_params={'learning_rate': 0.1},  # use fixed learning rate
                eval_metric='acc',  # report accuracy during training
                batch_end_callback=mx.callback.Speedometer(batch_size, 100),
-               num_epoch=5)  # train for at most 10 dataset passes
-# ========================================================
+               num_epoch=5,
+               arg_params=arg_param)  # train for at most 10 dataset passes
 
 
 # Making sure that fit doesn't always overwrite parameters by returning to module 1
 print("\n===Training module1===\n")
+arg_param, aux_param = mlp_model2.get_params()
 mlp_model1.fit(train_iter,  # train data
               eval_data=val_iter,  # validation data
               optimizer='sgd',  # use SGD to train
               optimizer_params={'learning_rate': 0.1},  # use fixed learning rate
               eval_metric='acc',  # report accuracy during training
               batch_end_callback=mx.callback.Speedometer(batch_size, 100),
-              num_epoch=5)  # train for at most 10 dataset passes
+              num_epoch=5,
+              arg_params=arg_param)  # train for at most 10 dataset passes
