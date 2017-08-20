@@ -36,9 +36,9 @@ net_mod2.collect_params().initialize(mx.init.Uniform(scale=0.1), ctx=ctx)
 
 softmax_cross_entropy = gluon.loss.SoftmaxCrossEntropyLoss()
 
-trainer_shared = gluon.Trainer(net_shared.collect_params(), 'sgd', {'learning_rate': 0.005})
-trainer_mod1 = gluon.Trainer(net_mod1.collect_params(), 'sgd', {'learning_rate': 0.005})
-trainer_mod2 = gluon.Trainer(net_mod2.collect_params(), 'sgd', {'learning_rate': 0.005})
+trainer_shared = gluon.Trainer(net_shared.collect_params(), 'sgd', {'learning_rate': 0.05})
+trainer_mod1 = gluon.Trainer(net_mod1.collect_params(), 'sgd', {'learning_rate': 0.05})
+trainer_mod2 = gluon.Trainer(net_mod2.collect_params(), 'sgd', {'learning_rate': 0.05})
 
 def evaluate_accuracy(data_iterator, net):
     acc = mx.metric.Accuracy()
@@ -85,6 +85,10 @@ for e in range(epochs):
 
 # We expect the shared module to start where the first module finished
 # There will be a small accuracy decrease since one layer was not trained
+test_accuracy = evaluate_accuracy(test_data2, lambda x: net_mod2(net_shared(x)))
+train_accuracy = evaluate_accuracy(train_data2, lambda x :net_mod2(net_shared(x)))
+print("\n#### Shared+Module2 Result after Mod1 Training ####")
+print("Mod2: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
 print("\n#### Shared+Module2 Training ####")
 for e in range(epochs):
     # Train Branch with mod2 on dataset 2 
