@@ -20,7 +20,7 @@ net_shared = gluon.nn.Sequential()
 with net_shared.name_scope():
     net_shared.add(gluon.nn.Dense(128, activation='relu'))
     net_shared.add(gluon.nn.Dense(64, activation='relu'))
-    net_shared.add(gluon.nn.Dense(num_outputs, activation='relu'))
+    net_shared.add(gluon.nn.Dense(num_outputs))
 
 net_shared.collect_params().initialize(mx.init.Uniform(scale=0.1), ctx=ctx)
 
