@@ -62,7 +62,7 @@ test_accuracy = evaluate_accuracy(test_data2, lambda x: net_mod2(net_shared(x)))
 train_accuracy = evaluate_accuracy(train_data2, lambda x :net_mod2(net_shared(x)))
 print("Mod2: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
 
-print("#### Shared+Module1 Training ####")
+print("\n#### Shared+Module1 Training ####")
 for e in range(epochs):
     # Train Branch with mod1 on dataset 1 
     for i, (data, label) in enumerate(train_data1):
@@ -85,7 +85,7 @@ for e in range(epochs):
 
 # We expect the shared module to start where the first module finished
 # There will be a small accuracy decrease since one layer was not trained
-print("#### Shared+Module2 Training ####")
+print("\n#### Shared+Module2 Training ####")
 for e in range(epochs):
     # Train Branch with mod2 on dataset 2 
     for i, (data, label) in enumerate(train_data2):
@@ -106,7 +106,7 @@ for e in range(epochs):
     train_accuracy = evaluate_accuracy(train_data2, lambda x: net_mod2(net_shared(x)))
     print("Mod2: Epoch %s. Loss: %s, Train_acc %s, Test_acc %s" % (e, moving_loss, train_accuracy, test_accuracy))
 
-print("#### After Training ####")
+print("\n#### After Training ####")
 test_accuracy = evaluate_accuracy(test_data1, lambda x: net_mod1(net_shared(x)))
 train_accuracy = evaluate_accuracy(train_data1, lambda x :net_mod1(net_shared(x)))
 print("Mod1: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
