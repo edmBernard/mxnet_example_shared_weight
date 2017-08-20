@@ -19,7 +19,7 @@ def get_all_symbols(data, label):
     act2 = mx.sym.Activation(data=fc2, name='act2', act_type="relu")
 
     # Module 1
-    fc3_1 = mx.sym.FullyConnected(data=act2, name='fc3_1', num_hidden=5)
+    fc3_1 = mx.sym.FullyConnected(data=act2, name='fc3_1', num_hidden=10)
     mlps1 = mx.sym.SoftmaxOutput(data=fc3_1, label=label, name='softmax1')
     
     # Module 2
