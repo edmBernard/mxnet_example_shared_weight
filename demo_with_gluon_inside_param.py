@@ -51,24 +51,25 @@ def main():
             data = data.as_in_context(ctx).reshape((-1,784))
             label = label.as_in_context(ctx)
             output = net(data)
-            predictions = nd.argmax(output, axis=1)
-            acc.update(preds=predictions, labels=label)
-        return acc.get()[1]
+            acc.update([label], [output])
+        return acc.get()
 
     epochs = 4
     moving_loss = 0.
     smoothing_constant = .01
+    metric = mx.metric.Accuracy()
 
     print("#### Before Training ####")
-    test_accuracy = evaluate_accuracy(test_data1, lambda x: model(x, True))
-    train_accuracy = evaluate_accuracy(train_data1, lambda x :model(x, True))
+    _, test_accuracy = evaluate_accuracy(test_data1, lambda x: model(x, True))
+    _, train_accuracy = evaluate_accuracy(train_data1, lambda x: model(x, True))
     print("Mod1: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
-    test_accuracy = evaluate_accuracy(test_data2, lambda x: model(x, False))
-    train_accuracy = evaluate_accuracy(train_data2, lambda x :model(x, False))
+    _, test_accuracy = evaluate_accuracy(test_data2, lambda x: model(x, False))
+    _, train_accuracy = evaluate_accuracy(train_data2, lambda x: model(x, False))
     print("Mod2: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
 
     print("\n#### Shared+Module1 Training ####")
     for e in range(epochs):
+        metric.reset()
         # Train Branch with mod1 on dataset 1 
         for i, (data, label) in enumerate(train_data1):
             data = data.as_in_context(ctx).reshape((-1, 784))
@@ -79,21 +80,29 @@ def main():
                 loss.backward()
             trainer.step(batch_size, ignore_stale_grad=True)
 
+            metric.update([label], [output])
+
             curr_loss = nd.mean(loss).asscalar()
             moving_loss = (curr_loss if ((i == 0) and (e == 0))
                         else (1 - smoothing_constant) * moving_loss + (smoothing_constant) * curr_loss)
-        test_accuracy = evaluate_accuracy(test_data1, lambda x: model(x, True))
-        train_accuracy = evaluate_accuracy(train_data1, lambda x :model(x, True))
-        print("Mod1: Epoch %s. Loss: %s, Train_acc %s, Test_acc %s" % (e, moving_loss, train_accuracy, test_accuracy))
+
+            if i % 100 == 0 and i > 0:
+                name, acc = metric.get()
+                print('[Epoch %d Batch %d] Loss: %s Training: %s=%f'%(e, i, moving_loss, name, acc))
+
+        _, train_accuracy = metric.get()
+        _, test_accuracy = evaluate_accuracy(test_data1,lambda x: model(x, True))
+        print("Epoch %s. Loss: %s, Train_acc %s, Test_acc %s\n" % (e, moving_loss, train_accuracy, test_accuracy))
 
     # We expect the shared module to start where the first module finished
     # There will be a small accuracy decrease since one layer was not trained
-    test_accuracy = evaluate_accuracy(test_data2, lambda x: model(x, False))
-    train_accuracy = evaluate_accuracy(train_data2, lambda x :model(x, False))
+    _, test_accuracy = evaluate_accuracy(test_data2, lambda x: model(x, False))
+    _, train_accuracy = evaluate_accuracy(train_data2, lambda x: model(x, False))
     print("\n#### Shared+Module2 Result after Mod1 Training ####")
     print("Mod2: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
     print("\n#### Shared+Module2 Training ####")
     for e in range(epochs):
+        metric.reset()
         # Train Branch with mod2 on dataset 2 
         for i, (data, label) in enumerate(train_data2):
             data = data.as_in_context(ctx).reshape((-1,784))
@@ -104,20 +113,25 @@ def main():
                 loss.backward()
             trainer.step(batch_size, ignore_stale_grad=True)
 
+            metric.update([label], [output])
+
             curr_loss = nd.mean(loss).asscalar()
             moving_loss = (curr_loss if ((i == 0) and (e == 0))
                         else (1 - smoothing_constant) * moving_loss + (smoothing_constant) * curr_loss)
+            if i % 100 == 0 and i > 0:
+                name, acc = metric.get()
+                print('[Epoch %d Batch %d] Loss: %s Training: %s=%f'%(e, i, moving_loss, name, acc))
 
-        test_accuracy = evaluate_accuracy(test_data2, lambda x: model(x, False))
-        train_accuracy = evaluate_accuracy(train_data2, lambda x: model(x, False))
-        print("Mod2: Epoch %s. Loss: %s, Train_acc %s, Test_acc %s" % (e, moving_loss, train_accuracy, test_accuracy))
+        _, train_accuracy = metric.get()
+        _, test_accuracy = evaluate_accuracy(test_data1, lambda x: model(x, False))
+        print("Epoch %s. Loss: %s, Train_acc %s, Test_acc %s\n" % (e, moving_loss, train_accuracy, test_accuracy))
 
     print("\n#### After Training ####")
-    test_accuracy = evaluate_accuracy(test_data1, lambda x: model(x, True))
-    train_accuracy = evaluate_accuracy(train_data1, lambda x :model(x, True))
+    _, test_accuracy = evaluate_accuracy(test_data1, lambda x: model(x, True))
+    _, train_accuracy = evaluate_accuracy(train_data1, lambda x: model(x, True))
     print("Mod1: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
-    test_accuracy = evaluate_accuracy(test_data2, lambda x: model(x, False))
-    train_accuracy = evaluate_accuracy(train_data2, lambda x :model(x, False))
+    _, test_accuracy = evaluate_accuracy(test_data2, lambda x: model(x, False))
+    _, train_accuracy = evaluate_accuracy(train_data2, lambda x: model(x, False))
     print("Mod2: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
 
 if __name__ == '__main__':

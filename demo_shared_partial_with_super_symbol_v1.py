@@ -83,7 +83,7 @@ mlp_model2.init_params()
 # Train module 1
 print("\n===Training module1===\n")
 # ========================================================
-# DON'T WORK this line crash with :
+# DON'T WORK this line crash with:
 # > ValueError: Find name "fc3_2_bias" that is not in the arguments
 mlp_model1.fit(train_iter,  # train data
               eval_data=val_iter,  # validation data

@@ -95,7 +95,7 @@ def main():
     # We expect the shared module to start where the first module finished
     # There will be a small accuracy decrease since one layer was not trained
     _, test_accuracy = evaluate_accuracy(test_data2, lambda x: net_mod2(net_shared(x)))
-    _, train_accuracy = evaluate_accuracy(train_data2, lambda x :net_mod2(net_shared(x)))
+    _, train_accuracy = evaluate_accuracy(train_data2, lambda x: net_mod2(net_shared(x)))
     print("\n#### Shared+Module2 Result after Mod1 Training ####")
     print("Mod2: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
     print("\n#### Shared+Module2 Training ####")
@@ -128,10 +128,10 @@ def main():
 
     print("\n#### After Training ####")
     _, test_accuracy = evaluate_accuracy(test_data1, lambda x: net_mod1(net_shared(x)))
-    _, train_accuracy = evaluate_accuracy(train_data1, lambda x :net_mod1(net_shared(x)))
+    _, train_accuracy = evaluate_accuracy(train_data1, lambda x: net_mod1(net_shared(x)))
     print("Mod1: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
     _, test_accuracy = evaluate_accuracy(test_data2, lambda x: net_mod2(net_shared(x)))
-    _, train_accuracy = evaluate_accuracy(train_data2, lambda x :net_mod2(net_shared(x)))
+    _, train_accuracy = evaluate_accuracy(train_data2, lambda x: net_mod2(net_shared(x)))
     print("Mod2: Train_acc %s, Test_acc %s" % (train_accuracy, test_accuracy))
 
 if __name__ == '__main__':
