@@ -13,5 +13,6 @@ Some test to partially shared layer between network
 ├── demo_with_gluon.py                           Example with Sequential gluon API
 ├── demo_with_gluon_hybrid.py                    Example with HybridSequential gluon API
 ├── demo_with_gluon_inside_param.py              Example with condition in Block forward definition
+├── demo_with_gluon_siamese.py                   Example of siamese network with gluon
 └── README.md
 ```
