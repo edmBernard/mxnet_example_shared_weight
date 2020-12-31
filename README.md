@@ -2,6 +2,12 @@
 
 Some test to partially shared layer between network
 
+I made this repository to try different way to shared weight in different configuration : 
+- siamese network
+- common parts (We want a model able to predict Age and Gender but the database don't contain both attributs)
+
+In 2017, the gluon API was still new that's why I try to use the Module API. Today, I advice to use the gluon API, it's more flexible and don't require hack to achieve shared weight.
+
 ```
 .
 ├── demo_shared_partial_with_super_symbol_v1.py  not working: Example with Shared_module argument from mx.mod.bind
